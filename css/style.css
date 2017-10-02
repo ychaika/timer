@@ -82,13 +82,18 @@ table {
     background: #39c9bb;
     color: #fff;
     font-size: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 40px;
+    text-align: center;
+    display: block;
+    padding: 10px;
     width: 120px;
     text-decoration: none;
     border-radius: 4px;
+    cursor: pointer;
+    border: none;
+}
+
+.timerBtn:focus {
+    outline: none;
 }
 
 .stepList {

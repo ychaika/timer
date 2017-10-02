@@ -12,10 +12,10 @@ document.addEventListener("DOMContentLoaded", function(e) {
         stepItem = document.getElementsByClassName("js-stepItem"),
         secondsStep = 0,
         minutesStep = 0,
-        timeStatus = "disable",
+        timeStatus = false,
         goTimer;
 
-    var stepsArr = {};
+    var stepsArr = [];
 
     if(localStorage["timeSteps"]) {
         stepsArr =  JSON.parse(localStorage["timeSteps"]);
@@ -27,7 +27,10 @@ document.addEventListener("DOMContentLoaded", function(e) {
     function startTimer () {
         var startTime = minutesStep * 60 + secondsStep;
 
-        timeStatus = "active";
+        if(timeStatus == true) {
+            return false;
+        }
+        timeStatus = true;
         if(stopBtn.classList.contains("js-reset")) {
             stopBtn.classList.add("js-stop");
             stopBtn.classList.remove("red", "js-reset");
@@ -37,19 +40,9 @@ document.addEventListener("DOMContentLoaded", function(e) {
             startTime++;
             secondsStep = startTime % 60;
             minutesStep = (startTime - secondsStep) / 60;
-
-            if(secondsStep < 10) {
-                seconds.innerHTML = "0" + secondsStep;
-            } else {
-                seconds.innerHTML = secondsStep;
-            }
-
-            if(minutesStep < 10) {
-                minutes.innerHTML = "0" + minutesStep;
-            } else {
-                minutes.innerHTML = minutesStep;
-            }
-
+            var timesVal = setTime(minutesStep, secondsStep);
+            minutes.innerHTML = timesVal[0];
+            seconds.innerHTML = timesVal[1];
         }, 1000);
     }
 
@@ -57,14 +50,31 @@ document.addEventListener("DOMContentLoaded", function(e) {
         localStorage.setItem("timeSteps", JSON.stringify(stepsArr));
     }
     
+    function setTime(min, sec) {
+        var minVal, secVal;
+
+        if(secondsStep < 10) {
+            secVal = "0" + sec;
+        } else {
+            secVal = sec;
+        }
+        if(minutesStep < 10) {
+            minVal = "0" + min;
+        } else {
+            minVal = min;
+        }
+
+        return [minVal, secVal];
+    }
+
     /* display steps */
 
     function displaySteps() {
-        for(var key in stepsArr) {
+        for(var i = 0; i < stepsArr.length; i++) {
             var step = document.createElement("div");
-            step.className = "step js-stepItem ";
-            step.textContent = stepsArr[key];
-            step.setAttribute("data-key", key);
+            step.className = "step js-stepItem";
+            step.textContent = stepsArr[i]["time"];
+            step.setAttribute("data-key", stepsArr[i]["id"]);
             stepList.appendChild(step);
         }
     }
@@ -74,35 +84,23 @@ document.addEventListener("DOMContentLoaded", function(e) {
     /* events */ 
 
     startBtn.addEventListener("click", function(e){
-        e.preventDefault();
         startTimer();
     });
 
     stepBtn.addEventListener("click", function(e) {
-        var addSec,
-            addMin,
-            newKey; 
+        var stepObj = {},
+            addSec,
+            addMin; 
+        var timesVal = setTime(minutesStep, secondsStep);
 
-        e.preventDefault();
-        if(minutesStep < 10) {
-            addMin = "0" + minutesStep;
+        if(stepsArr.length == 0) {
+            stepObj["id"] = "0"
         } else {
-            addMin = minutesStep;
-        }
-        if(secondsStep < 10) {
-            addSec = "0" + secondsStep;
-        } else {
-            addSec = secondsStep;
+            stepObj["id"] = parseInt(stepsArr[stepsArr.length -1]["id"]) + 1;
         }
 
-        if(Object.keys(stepsArr).length == 0) {
-            newKey = 0;
-        } else {
-            var arrKeys = Object.keys(stepsArr);
-            newKey = parseInt(arrKeys[arrKeys.length - 1]) + 1;
-        }
-
-        stepsArr[newKey] = addMin + ":" + addSec;
+        stepObj["time"] = timesVal[0] + ":" + timesVal[1];
+        stepsArr.push(stepObj);
         stepList.innerHTML = "";
 
         writeLS();
@@ -111,14 +109,12 @@ document.addEventListener("DOMContentLoaded", function(e) {
 
     stopBtn.addEventListener("click", function() {
         if(this.classList.contains("js-stop")) {
-            e.preventDefault();
-            timeStatus = "disable"
+            timeStatus = false;
             clearInterval(goTimer);
             this.classList.remove("js-stop");
             this.classList.add("red", "js-reset");
             this.innerHTML = "Reset";
         } else if (this.classList.contains("js-reset")) {
-            e.preventDefault();
             minutes.innerHTML = "00";
             seconds.innerHTML = "00";
             minutesStep, secondsStep = 0;
@@ -130,8 +126,10 @@ document.addEventListener("DOMContentLoaded", function(e) {
 
     document.addEventListener("click", function(e) {
         if(e.target.classList.contains("js-stepItem")) {
-            var itemKey = e.target.getAttribute("data-key");
-            delete stepsArr[itemKey];
+            var stepInd = stepsArr.findIndex(function(elem, index) {
+                return stepsArr[index]["id"] == e.target.getAttribute("data-key");
+            });
+            stepsArr.splice(stepInd, 1);
             e.target.parentNode.removeChild(e.target);
             writeLS();
         }
