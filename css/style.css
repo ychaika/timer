@@ -114,12 +114,31 @@ table {
     padding-bottom: 5px;
     font-size: 20px;
     color: #195953;
-    width: 80px;
+    width: 120px;
     margin: 20px auto;
     text-align: center;
-    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .timerBtn.red {
+    background: red;
+}
+
+.stepStart , .stepRemove {
+    width: 15px;
+    height: 15px;
+    border: none;
+    display: inline-block;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.stepStart {
+    background: mediumseagreen;
+}
+
+.stepRemove {
     background: red;
 }
